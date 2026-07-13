@@ -8,7 +8,7 @@ on:
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,3 +24,29 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  ai_security_gate:
+    runs-on: self-hosted
+    needs: build_and_test
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bootstrap Environment Dependencies
+        run: |
+          echo "Checking and installing environment prerequisites..."
+          python3 -m pip install --upgrade pip
+          python3 -m pip install openai python-dotenv
+
+      - name: Run Gatekeeper Script
+        run: |
+          python /opt/security-agent/scan_diff.py
