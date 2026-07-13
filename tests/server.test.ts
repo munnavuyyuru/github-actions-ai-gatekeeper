@@ -27,26 +27,34 @@ describe('API Endpoints', () => {
     it('should return matching documents for valid string query', async () => {
       const response = await request(app)
         .post('/api/v1/search')
-        .send({ query: 'Sensitive data 1' });
+        .send({ query: 'MFA' });
       expect(response.status).toBe(200);
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0].content).toBe('Sensitive data 1');
+      expect(response.body.length).toBeGreaterThan(0);
+      expect(response.body[0].content.toLowerCase()).toContain('mfa');
     });
   });
 
   describe('GET /api/v1/documents', () => {
-    it('should return 400 for non-string filename', async () => {
+    it('should return sanitized filename for numeric query param (Express converts to string)', async () => {
       const response = await request(app)
         .get('/api/v1/documents')
         .query({ filename: 123 });
-      expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: 'Filename must be a string' });
+      expect(response.status).toBe(200);
+      expect(response.body.filename).toBe('123');
     });
 
     it('should return 400 for missing filename', async () => {
       const response = await request(app).get('/api/v1/documents');
       expect(response.status).toBe(400);
       expect(response.body).toEqual({ error: 'Filename must be a string' });
+    });
+
+    it('should return 400 for empty filename after sanitization', async () => {
+      const response = await request(app)
+        .get('/api/v1/documents')
+        .query({ filename: '' });
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ error: 'Invalid filename' });
     });
 
     it('should sanitize path traversal attempts', async () => {

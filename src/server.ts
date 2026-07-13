@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
+import { searchDocuments } from './db';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,22 +17,6 @@ app.use(cors({
 
 // Body parsing
 app.use(express.json());
-
-// Mock database
-const mockDatabase = [
-  { id: 1, content: 'Sensitive data 1' },
-  { id: 2, content: 'Sensitive data 2' },
-  { id: 3, content: 'Sensitive data 3' }
-];
-
-// Global error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Log full error stack internally for developers
-  console.error(err.stack);
-  
-  // Return generic sanitized message to client
-  res.status(500).json({ error: 'An internal server error occurred' });
-});
 
 // Safe search endpoint
 app.post('/api/v1/search', (req, res) => {
@@ -48,9 +33,7 @@ app.post('/api/v1/search', (req, res) => {
   }
   
   // Safe search using standard string methods
-  const results = mockDatabase.filter(item =>
-    item.content.toLowerCase().includes(query.toLowerCase())
-  );
+  const results = searchDocuments(query);
   
   res.json(results);
 });
@@ -80,7 +63,16 @@ app.get('/api/v1/documents', (req, res) => {
 
 // Test route to trigger unhandled error
 app.get('/api/v1/error', (req, res, next) => {
-  next('Test unhandled error');
+  next(new Error('Test unhandled error'));
+});
+
+// Global error handling middleware (MUST be after all routes)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Log full error stack internally for developers
+  console.error(err.stack);
+  
+  // Return generic sanitized message to client
+  res.status(500).json({ error: 'An internal server error occurred' });
 });
 
 // Start server
