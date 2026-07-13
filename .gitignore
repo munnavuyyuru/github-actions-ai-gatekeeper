@@ -2,4 +2,7 @@ node_modules/
 dist/
 .env
 *.log
+coverage/
+package-lock.json
+jest.config.ts
 Agents.md
