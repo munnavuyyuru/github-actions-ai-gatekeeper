@@ -24,6 +24,15 @@ const mockDatabase = [
   { id: 3, content: 'Sensitive data 3' }
 ];
 
+// Global error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Log full error stack internally for developers
+  console.error(err.stack);
+  
+  // Return generic sanitized message to client
+  res.status(500).json({ error: 'An internal server error occurred' });
+});
+
 // Safe search endpoint
 app.post('/api/v1/search', (req, res) => {
   const { query } = req.body;
@@ -31,6 +40,11 @@ app.post('/api/v1/search', (req, res) => {
   // Validate input is a string
   if (typeof query !== 'string') {
     return res.status(400).json({ error: 'Query must be a string' });
+  }
+  
+  // Return empty array for empty string
+  if (query.trim() === '') {
+    return res.json([]);
   }
   
   // Safe search using standard string methods
@@ -43,10 +57,10 @@ app.post('/api/v1/search', (req, res) => {
 
 // Safe document endpoint
 app.get('/api/v1/documents', (req, res) => {
-  const { filename } = req.query;
+  const filename = req.query.filename;
   
   // Validate filename is provided and is a string
-  if (typeof filename !== 'string') {
+  if (filename === undefined || typeof filename !== 'string') {
     return res.status(400).json({ error: 'Filename must be a string' });
   }
   
@@ -64,16 +78,16 @@ app.get('/api/v1/documents', (req, res) => {
   res.json({ filename: safeFilename, message: 'File access validated' });
 });
 
-// Global error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Log full error stack internally for developers
-  console.error(err.stack);
-  
-  // Return generic sanitized message to client
-  res.status(500).json({ error: 'An internal server error occurred' });
+// Test route to trigger unhandled error
+app.get('/api/v1/error', (req, res, next) => {
+  next('Test unhandled error');
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export { app };
