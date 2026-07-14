@@ -7,9 +7,6 @@ import { searchDocuments } from './db';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Hardcoded API key for fallback authentication (FLAW: secret in source)
-const API_KEY = process.env.API_KEY || 'sk-7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d';
-
 // Security middleware
 app.use(helmet());
 
