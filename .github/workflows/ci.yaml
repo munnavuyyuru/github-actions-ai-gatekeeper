@@ -30,6 +30,10 @@ jobs:
     needs: build_and_test
     if: github.event_name == 'pull_request'
 
+    permissions:
+      pull-requests: write
+      issues: write
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -48,5 +52,8 @@ jobs:
           python3 -m pip install openai python-dotenv requests
 
       - name: Run Gatekeeper Script
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python /opt/security-agent/scan_diff.py
