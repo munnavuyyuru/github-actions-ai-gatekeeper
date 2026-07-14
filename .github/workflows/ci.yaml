@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "Checking and installing environment prerequisites..."
           python3 -m pip install --upgrade pip
-          python3 -m pip install openai python-dotenv
+          python3 -m pip install openai python-dotenv requests
 
       - name: Run Gatekeeper Script
         run: |
