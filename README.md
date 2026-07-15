@@ -49,19 +49,7 @@ Built with Nemotron-3-Ultra via NVIDIA NIM on GitHub Actions self-hosted runners
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart TD
-    A[PR Opened] --> B[GitHub Actions]
-    B --> C{Self-Hosted Runner}
-    C --> D[scan_diff.py<br/>/opt/security-agent/]
-    D --> E[git diff origin/main...HEAD]
-    E --> F[NVIDIA NIM<br/>Nemotron-3-Ultra]
-    F --> G[Risk Score + Findings]
-    G --> H{Score ≥ 6?}
-    H -- Yes --> I[Slack Alert]
-    H -- No --> J[PR Comment]
-    I --> J
-```
+<img width="2522" height="722" alt="github-actions-ai-bot drawio" src="https://github.com/user-attachments/assets/26dedda9-69f2-470d-a3d8-b4a3464729b0" />
 
 **Core Components:** Scanner (Python/OpenAI SDK) → LLM (NIM) → Notifier (GitHub API, Slack) → CI (GitHub Actions self-hosted) → Backend (Node/Express/TS)
 
